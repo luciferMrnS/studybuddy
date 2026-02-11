@@ -1,0 +1,68 @@
+.App {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.upload-section, .actions, .summary, .questionnaire, .chat {
+  margin-bottom: 20px;
+}
+
+button {
+  padding: 10px 15px;
+  margin: 5px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.end-session {
+  background-color: #dc3545;
+}
+
+.end-session:hover {
+  background-color: #c82333;
+}
+
+.question {
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.question button {
+  background-color: #28a745;
+}
+
+.question button:hover {
+  background-color: #218838;
+}
+
+/* Mobile-friendly */
+@media (max-width: 600px) {
+  .App {
+    padding: 10px;
+  }
+
+  button {
+    width: 100%;
+    margin: 5px 0;
+  }
+
+  input[type="file"], input[type="text"] {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+}

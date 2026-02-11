@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Buddy</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data: https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: blob: https:;">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" onload="window.pdfjsLib = window.pdfjsLib || window.pdfjs;"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: rgba(255,255,255,0.8);
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .upload-section {
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            background: rgba(102, 126, 234, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: #5a67d8;
+        }
+
+        .upload-section.dragover {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: #5a67d8;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px 0;
+        }
+
+        .upload-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            background: linear-gradient(45deg, #48bb78, #38a169);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(72, 187, 120, 0.4);
+        }
+
+        .end-session-btn {
+            background: linear-gradient(45deg, #f56565, #e53e3e);
+        }
+
+        .end-session-btn:hover {
+            box-shadow: 0 5px 15px rgba(245, 101, 101, 0.4);
+        }
+
+        .content {
+            margin-top: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h2 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .summary, .chat-response {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+
+        .questionnaire {
+            display: grid;
+            gap: 15px;
+        }
+
+        .question {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #48bb78;
+        }
+
+        .question h3 {
+            margin-bottom: 10px;
+            color: #2d3748;
+        }
+
+        .options {
+            margin: 10px 0;
+        }
+
+        .options ul {
+            padding-left: 20px;
+        }
+
+        .options li {
+            margin-bottom: 5px;
+        }
+
+        .reveal-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .reveal-btn:hover {
+            background: #5a67d8;
+        }
+
+        .chat-section {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            font-size: 16px;
+        }
+
+        .chat-input button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .chat-input button:hover {
+            background: #5a67d8;
+        }
+
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-size: 18px;
+            margin: 20px 0;
+        }
+
+        .error {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            border-left: 5px solid #c53030;
+        }
+
+        .success {
+            background: #c6f6d5;
+            color: #276749;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            border-left: 5px solid #276749;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .action-btn {
+                width: 100%;
+            }
+
+            .chat-input {
+                flex-direction: column;
+            }
+
+            .chat-input button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-book-reader"></i> Study Buddy</h1>
+            <p>Upload documents and get AI-powered insights</p>
+        </div>
+
+        <div class="card">
+            <div class="upload-section" id="upload-section">
+                <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: #667eea; margin-bottom: 20px;"></i>
+                <p>Drag & drop files here or click to browse</p>
+                <p style="font-size: 0.9rem; color: #666; margin: 10px 0;">Supported: PDF, Word, Excel, CSV, TXT</p>
+                <input type="file" id="file-input" class="file-input" multiple accept=".pdf,.docx,.xlsx,.xls,.csv,.txt">
+                <br>
+                <button class="upload-btn" id="choose-btn">Choose Files</button>
+                <button class="upload-btn" id="upload-btn" style="display: none;">Upload Files</button>
+                <div id="file-list" style="margin-top: 20px;"></div>
+                <div id="progress-container" style="display: none; margin-top: 20px;">
+                    <div style="background: #f0f0f0; border-radius: 10px; height: 20px; overflow: hidden;">
+                        <div id="progress-bar" style="background: linear-gradient(45deg, #667eea, #764ba2); height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+                    </div>
+                    <p id="progress-text" style="text-align: center; margin-top: 10px; color: #667eea;">Uploading...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="action-btn" id="summary-btn"><i class="fas fa-file-alt"></i> Get Summary</button>
+            <button class="action-btn" id="questionnaire-btn"><i class="fas fa-question-circle"></i> Generate Questionnaire</button>
+            <button class="action-btn end-session-btn" id="end-session-btn"><i class="fas fa-sign-out-alt"></i> End Session</button>
+        </div>
+
+        <div class="content">
+            <div id="messages"></div>
+
+            <div class="section" id="summary-section" style="display: none;">
+                <h2><i class="fas fa-file-alt"></i> Summary</h2>
+                <div class="summary" id="summary-content"></div>
+            </div>
+
+            <div class="section" id="questionnaire-section" style="display: none;">
+                <h2><i class="fas fa-question-circle"></i> Questionnaire</h2>
+                <div class="questionnaire" id="questionnaire-content"></div>
+            </div>
+
+            <div class="section">
+                <h2><i class="fas fa-comments"></i> Ask Anything About the Documents</h2>
+                <div class="chat-section">
+                    <div class="chat-input">
+                        <input type="text" id="chat-input" placeholder="Enter your question...">
+                        <button id="chat-btn"><i class="fas fa-paper-plane"></i> Ask</button>
+                    </div>
+                    <div id="chat-response" style="margin-top: 20px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFiles = [];
+
+        // File upload handling
+        const uploadSection = document.getElementById('upload-section');
+        const fileInput = document.getElementById('file-input');
+        const chooseBtn = document.getElementById('choose-btn');
+        const uploadBtn = document.getElementById('upload-btn');
+        const fileList = document.getElementById('file-list');
+
+        chooseBtn.addEventListener('click', () => fileInput.click());
+
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+
+        uploadSection.addEventListener('dragleave', () => {
+            uploadSection.classList.remove('dragover');
+        });
+
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+            selectedFiles = Array.from(e.dataTransfer.files);
+            updateFileList();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            selectedFiles = Array.from(e.target.files);
+            updateFileList();
+        });
+
+        function updateFileList() {
+            fileList.innerHTML = '';
+            if (selectedFiles.length > 0) {
+                const ul = document.createElement('ul');
+                selectedFiles.forEach(file => {
+                    const li = document.createElement('li');
+                    li.textContent = `${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
+                    ul.appendChild(li);
+                });
+                fileList.appendChild(ul);
+                uploadBtn.style.display = 'inline-block';
+            } else {
+                uploadBtn.style.display = 'none';
+            }
+        }
+
+        // Upload files
+        uploadBtn.addEventListener('click', () => {
+            if (selectedFiles.length === 0) {
+                showMessage('Please select files first', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            selectedFiles.forEach(file => formData.append('files', file));
+
+            const xhr = new XMLHttpRequest();
+            const progressContainer = document.getElementById('progress-container');
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+
+            progressContainer.style.display = 'block';
+            progressBar.style.width = '0%';
+            progressText.textContent = 'Uploading... 0%';
+
+            xhr.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable) {
+                    const percentComplete = (e.loaded / e.total) * 100;
+                    progressBar.style.width = percentComplete + '%';
+                    progressText.textContent = `Uploading... ${Math.round(percentComplete)}%`;
+                }
+            });
+
+            xhr.addEventListener('load', () => {
+                if (xhr.status === 200) {
+                    const data = JSON.parse(xhr.responseText);
+                    showMessage(data.message, 'success');
+                    progressText.textContent = 'Files uploaded successfully.';
+                    setTimeout(() => {
+                        progressContainer.style.display = 'none';
+                    }, 1000);
+                } else {
+                    const data = JSON.parse(xhr.responseText);
+                    showMessage(data.error, 'error');
+                    progressContainer.style.display = 'none';
+                }
+            });
+
+            xhr.addEventListener('error', () => {
+                showMessage('Upload failed', 'error');
+                progressContainer.style.display = 'none';
+            });
+
+            xhr.open('POST', '/upload');
+            xhr.send(formData);
+        });
+
+        // Get summary
+        document.getElementById('summary-btn').addEventListener('click', async () => {
+            showLoading('Generating summary...');
+
+            try {
+                const response = await fetch('/summary');
+                const data = await response.json();
+                if (response.ok) {
+                    document.getElementById('summary-content').innerHTML = `<p>${data.summary.replace(/\n/g, '<br>')}</p>`;
+                    document.getElementById('summary-section').style.display = 'block';
+                } else {
+                    showMessage('Error: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showMessage('Failed to generate summary: ' + error.message, 'error');
+            }
+
+            hideLoading();
+        });
+
+        // Generate questionnaire
+        document.getElementById('questionnaire-btn').addEventListener('click', async () => {
+            showLoading('Generating questionnaire...');
+
+            try {
+                const response = await fetch('/questionnaire');
+                const data = await response.json();
+                if (response.ok) {
+                    const questionnaire = data.questionnaire;
+                    const content = document.getElementById('questionnaire-content');
+                    content.innerHTML = '';
+                    questionnaire.forEach((q, index) => {
+                        const questionDiv = document.createElement('div');
+                        questionDiv.className = 'question';
+                        questionDiv.innerHTML = `
+                            <h3>${q.question}</h3>
+                            ${q.options ? `<div class="options"><ul>${q.options.map(opt => `<li>${opt}</li>`).join('')}</ul></div>` : ''}
+                            <button class="reveal-btn" onclick="revealAnswer(${index}, '${q.answer.replace(/'/g, "\\'")}')">Reveal Answer</button>
+                        `;
+                        content.appendChild(questionDiv);
+                    });
+                    document.getElementById('questionnaire-section').style.display = 'block';
+                } else {
+                    showMessage('Error: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showMessage('Failed to generate questionnaire: ' + error.message, 'error');
+            }
+
+            hideLoading();
+        });
+
+        // Chat
+        document.getElementById('chat-btn').addEventListener('click', async () => {
+            const question = document.getElementById('chat-input').value.trim();
+            if (!question) {
+                showMessage('Please enter a question', 'error');
+                return;
+            }
+
+            showLoading('Getting answer...');
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    document.getElementById('chat-response').innerHTML = `<div class="chat-response"><p>${data.answer.replace(/\n/g, '<br>')}</p></div>`;
+                } else {
+                    showMessage('Error: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showMessage('Failed to get answer: ' + error.message, 'error');
+            }
+
+            hideLoading();
+        });
+
+        // End session
+        document.getElementById('end-session-btn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/end-session', { method: 'POST' });
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage(data.message, 'success');
+                    // Reset UI
+                    selectedFiles = [];
+                    updateFileList();
+                    document.getElementById('summary-section').style.display = 'none';
+                    document.getElementById('questionnaire-section').style.display = 'none';
+                    document.getElementById('chat-response').innerHTML = '';
+                    document.getElementById('chat-input').value = '';
+                } else {
+                    showMessage(data.error, 'error');
+                }
+            } catch (error) {
+                showMessage('Failed to end session', 'error');
+            }
+        });
+
+        function revealAnswer(index, answer) {
+            alert(`Answer: ${answer}`);
+        }
+
+        function showMessage(message, type) {
+            const messages = document.getElementById('messages');
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-triangle' : 'check-circle'}"></i> ${message}`;
+            messages.appendChild(div);
+            setTimeout(() => div.remove(), 5000);
+        }
+
+        function showLoading(message) {
+            const loading = document.createElement('div');
+            loading.className = 'loading';
+            loading.id = 'loading';
+            loading.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${message}`;
+            document.querySelector('.content').prepend(loading);
+        }
+
+        function hideLoading() {
+            const loading = document.getElementById('loading');
+            if (loading) loading.remove();
+        }
+
+        // Enter key for chat
+        document.getElementById('chat-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('chat-btn').click();
+            }
+        });
+    </script>
+</body>
+</html>
