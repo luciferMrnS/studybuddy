@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import './App.css';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 function App() {
   const [files, setFiles] = useState([]);
   const [summary, setSummary] = useState('');
@@ -26,7 +28,7 @@ function App() {
     console.log('FormData entries:', Array.from(formData.entries()));
     
     try {
-      const response = await fetch('http://localhost:5000/upload', {
+      const response = await fetch(`${API_URL}/upload`, {
         method: 'POST',
         body: formData,
       });
@@ -47,11 +49,11 @@ function App() {
     }
     setLoading(false);
   };
-
+ 
   const handleSummary = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/summary');
+      const response = await fetch(`${API_URL}/summary`);
       const data = await response.json();
       if (response.ok) {
         setSummary(data.summary);
@@ -67,7 +69,7 @@ function App() {
   const handleQuestionnaire = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/questionnaire');
+      const response = await fetch(`${API_URL}/questionnaire`);
       const data = await response.json();
       if (response.ok) {
         setQuestionnaire(data.questionnaire);
@@ -84,7 +86,7 @@ function App() {
     if (!chatQuestion) return;
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/chat', {
+      const response = await fetch(`${API_URL}/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -101,7 +103,7 @@ function App() {
 
   const handleEndSession = async () => {
     try {
-      await fetch('http://localhost:5000/end-session', {
+      await fetch(`${API_URL}/end-session`, {
         method: 'POST',
       });
       setFiles([]);
