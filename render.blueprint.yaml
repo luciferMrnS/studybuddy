@@ -1,8 +1,10 @@
 services:
   - type: web
     name: studybuddy
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
     startCommand: python -m gunicorn app:app
     envVars:
       - key: PYTHON_VERSION
         value: "3.11"
+      - key: GEMINI_API_KEY
+        value: "AIzaSyBXT7rUzxdZAYomE1xX79-S_sz17ZLEYuk"
