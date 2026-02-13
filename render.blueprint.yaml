@@ -1,7 +1,7 @@
 services:
   - type: web
     name: studybuddy
-    buildCommand: pip3 install --no-cache-dir -r requirements.txt
+    buildCommand: python3 -m pip install --no-cache-dir -r requirements.txt
     startCommand: python3 -m gunicorn app:app
     envVars:
       - key: PYTHON_VERSION
